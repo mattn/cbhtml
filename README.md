@@ -26,7 +26,7 @@ function! s:clipboard_html(...) abort
 endfunction
 
 xnoremap <silent> <plug>(clipboard-html) :<c-u>call <sid>clipboard_html()<cr>
-xmap C <plug>(clipboard-html)
+xmap <leader>C <plug>(clipboard-html)
 ```
 
 ## License
