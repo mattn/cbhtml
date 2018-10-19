@@ -58,7 +58,7 @@ func main() {
 		"</body>\r\n" +
 		"</html>"
 
-	buf.WriteString(fmt.Sprintf(header, 97, 190, 111, 136+len(b)))
+	buf.WriteString(fmt.Sprintf(header, 97, 189+len(b), 111, 135+len(b)))
 	buf.Write(b)
 	buf.WriteString(footer)
 
