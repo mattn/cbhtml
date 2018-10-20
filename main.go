@@ -3,11 +3,15 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/net/html"
 )
 
 const (
@@ -30,8 +34,23 @@ var (
 
 func main() {
 	b, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		log.Fatal(err)
+
+	tok := html.NewTokenizer(os.Stdin)
+	found := false
+	for {
+		tt := tok.Next()
+		if tt == html.ErrorToken {
+			if tok.Err() != io.EOF {
+				log.Fatal(tok.Err())
+			}
+			break
+		}
+		if tt == html.StartTagToken {
+			if tag, _ := tok.TagName(); strings.ToLower(string(tag)) == "html" {
+				found = true
+				break
+			}
+		}
 	}
 
 	t, _, err := procRegisterClipboardFormat.Call(uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr("HTML Format"))))
@@ -50,14 +69,20 @@ func main() {
 		"StartHTML:%010d\r\n" +
 		"EndHTML:%010d\r\n" +
 		"StartFragment:%010d\r\n" +
-		"EndFragment:%010d\r\n" +
-		"<html><body><!--StartFragment -->\r\n"
+		"EndFragment:%010d\r\n"
+	starthtml := "<html><body>"
 
-	footer := "\r\n<!--EndFragment--></body</html>"
+	endhtml := "</body</html>"
 
-	buf.WriteString(fmt.Sprintf(header, 140, 140+len(b), 140, 140+len(b)))
-	buf.Write(b)
-	buf.WriteString(footer)
+	if found {
+		buf.WriteString(fmt.Sprintf(header, 105, 105+len(b), 105, 105+len(b)))
+		buf.Write(b)
+	} else {
+		buf.WriteString(fmt.Sprintf(header, 105, 105+len(starthtml)+len(b)+len(endhtml), 105+len(starthtml), 105+len(starthtml)+len(b)+len(endhtml)))
+		buf.WriteString(starthtml)
+		buf.Write(b)
+		buf.WriteString(endhtml)
+	}
 
 	r, _, err = procGlobalAlloc.Call(GMEM_MOVEABLE|GMEM_DDESHARE, uintptr(buf.Len()+4))
 	if r == 0 {
