@@ -51,14 +51,11 @@ func main() {
 		"EndHTML:%08d\r\n" +
 		"StartFragment:%08d\r\n" +
 		"EndFragment:%08d\r\n" +
-		"<html><body>\r\n" +
 		"<!--StartFragment -->\r\n"
 
-	footer := "\r\n<!--EndFragment-->\r\n" +
-		"</body>\r\n" +
-		"</html>"
+	footer := "\r\n<!--EndFragment-->\r\n"
 
-	buf.WriteString(fmt.Sprintf(header, 97, 189+len(b), 111, 135+len(b)))
+	buf.WriteString(fmt.Sprintf(header, 97, 155+len(b), 97, 155+len(b)))
 	buf.Write(b)
 	buf.WriteString(footer)
 
