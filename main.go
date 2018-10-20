@@ -47,15 +47,15 @@ func main() {
 	var buf bytes.Buffer
 
 	header := "Version:0.9\r\n" +
-		"StartHTML:%08d\r\n" +
-		"EndHTML:%08d\r\n" +
-		"StartFragment:%08d\r\n" +
-		"EndFragment:%08d\r\n" +
-		"<!--StartFragment -->\r\n"
+		"StartHTML:%010d\r\n" +
+		"EndHTML:%010d\r\n" +
+		"StartFragment:%010d\r\n" +
+		"EndFragment:%010d\r\n" +
+		"<html><body><!--StartFragment -->\r\n"
 
-	footer := "\r\n<!--EndFragment-->\r\n"
+	footer := "\r\n<!--EndFragment--></body</html>"
 
-	buf.WriteString(fmt.Sprintf(header, 97, 155+len(b), 97, 155+len(b)))
+	buf.WriteString(fmt.Sprintf(header, 140, 140+len(b), 140, 140+len(b)))
 	buf.Write(b)
 	buf.WriteString(footer)
 
@@ -67,11 +67,12 @@ func main() {
 	if h == 0 {
 		log.Fatal(err)
 	}
+	defer procGlobalUnlock.Call(h)
+
 	p := (*[1<<50 - 1]byte)(unsafe.Pointer(h))
 	copy(p[:buf.Len()], buf.Bytes())
 	r, _, err = procSetClipboardData.Call(t, h)
 	if r == 0 {
 		log.Fatal(err)
 	}
-	procGlobalUnlock.Call(h)
 }
